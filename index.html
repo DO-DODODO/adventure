@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adventure</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <div id="screen-menu" class="screen active">
+    <button id="btn-single" class="menu-btn single" aria-label="싱글모드"></button>
+    <button class="menu-btn multi" aria-label="멀티모드" disabled></button>
+    <button class="menu-btn rules" aria-label="게임룰" disabled></button>
+  </div>
+
+  <div id="screen-game" class="screen">
+    <div class="surface">
+      <div class="strip">
+        <div class="avatar" id="opp-avatar"></div>
+        <div class="who">상대</div>
+        <div class="hand"><div class="lane" id="opp-hand-lane"></div></div>
+        <div class="count" id="opp-count"></div>
+      </div>
+
+      <div class="table" id="table">
+        <div class="tableau opp" id="opp-tableau"></div>
+
+        <div class="board-row">
+          <div class="draw-pile" id="draw-pile">
+            <div class="card back"></div>
+            <div class="count" id="deck-count"></div>
+          </div>
+          <div class="board-wrap">
+            <img src="img/board.png" alt="가운데 보드">
+            <div id="discard-slots"></div>
+          </div>
+        </div>
+
+        <div class="tableau mine" id="my-tableau"></div>
+      </div>
+
+      <div class="strip">
+        <div class="avatar" id="my-avatar"></div>
+        <div class="who">나</div>
+        <div class="hand"><div class="lane" id="my-hand-lane"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-loading" class="screen">
+    <div class="hourglass">
+      <div class="bulb top"></div>
+      <div class="bulb bottom"></div>
+      <div class="sand"></div>
+      <div class="frame"></div>
+    </div>
+  </div>
+
+  <div id="screen-score" class="screen">
+    <div class="score-card">
+      <h2>결과</h2>
+      <div class="subtitle" id="score-subtitle"></div>
+      <div id="score-rows"></div>
+      <div class="score-total"><span>총점</span><span id="score-total-val"></span></div>
+      <div class="score-buttons">
+        <button id="btn-again" class="btn-again">한 판 더!</button>
+        <button id="btn-quit" class="btn-quit">게임종료</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/deck.js"></script>
+<script src="js/rules.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/state.js"></script>
+<script src="js/render.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
