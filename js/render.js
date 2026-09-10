@@ -110,8 +110,11 @@ function alignTableausToBoard() {
   const boardWrap = document.querySelector('.board-wrap');
   if (!table || !boardWrap) return;
   const tableRect = table.getBoundingClientRect();
+  const tablePaddingLeft = parseFloat(getComputedStyle(table).paddingLeft) || 0;
   const boardRect = boardWrap.getBoundingClientRect();
-  const leftOffset = boardRect.left - tableRect.left;
+  // .tableau's margin is measured from .table's content edge, not its
+  // border edge, so the left padding has to come out of the offset too.
+  const leftOffset = boardRect.left - (tableRect.left + tablePaddingLeft);
   document.querySelectorAll('.tableau').forEach((t) => {
     t.style.marginLeft = leftOffset + 'px';
     t.style.width = boardRect.width + 'px';
