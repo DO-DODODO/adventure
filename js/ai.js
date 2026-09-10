@@ -51,18 +51,52 @@ function aiChoosePlay(state) {
   return { card: byValue[0], action: 'discard' };
 }
 
+// true if any expedition is underway and not yet maxed out at 10 -- i.e.
+// there's still real work left to do this round.
+function hasOngoingExpedition(oppTableau) {
+  return COLORS.some((color) => {
+    const pile = oppTableau[color];
+    if (pile.length === 0) return false;
+    const highest = highestNumberInPile(pile);
+    return highest === null || highest < 10;
+  });
+}
+
 // Decide where to draw from, after the play above has already happened.
 // Returns { source: 'deck' } or { source: 'discard', color }
 function aiChooseDraw(state) {
+  // collect every discard pile that's actually worth taking (committed
+  // color, not the one just discarded this turn, and the top card can
+  // still legally be placed), then prefer whichever expedition is
+  // furthest along -- not just the first match in COLORS order, so an
+  // obviously good pickup (e.g. a 10 on a pile already at 9) doesn't
+  // lose out to an earlier color that's merely also valid.
+  let best = null;
   for (const color of COLORS) {
     if (color === state.justDiscardedColor) continue; // can't take back what it just discarded this turn
     const pile = state.discards[color];
     if (pile.length === 0) continue;
     const topCard = pile[pile.length - 1];
     if (!canPlaceOnTableau(state.oppTableau[color], topCard.label)) continue; // dead card, can never be played
-    if (isCommitted(state.oppHand, color, state.oppTableau[color].length)) {
+    if (!isCommitted(state.oppHand, color, state.oppTableau[color].length)) continue;
+    const highest = highestNumberInPile(state.oppTableau[color]) || 0;
+    if (!best || highest > best.highest) best = { color, highest };
+  }
+  if (best) return { source: 'discard', color: best.color };
+
+  // nothing committed to grab, but the round still has real work left --
+  // pull any safe (non-dead) card off the board instead of the deck, so
+  // the shared deck (and the round) doesn't run out faster than it needs to.
+  if (hasOngoingExpedition(state.oppTableau)) {
+    for (const color of COLORS) {
+      if (color === state.justDiscardedColor) continue;
+      const pile = state.discards[color];
+      if (pile.length === 0) continue;
+      const topCard = pile[pile.length - 1];
+      if (!canPlaceOnTableau(state.oppTableau[color], topCard.label)) continue;
       return { source: 'discard', color };
     }
   }
+
   return { source: 'deck' };
 }

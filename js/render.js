@@ -99,7 +99,27 @@ function layoutMyHand() {
   });
 }
 
+// The tableaus must line up horizontally with the board's slots, but the
+// two live in different flex contexts (tableau spans the table minus a
+// fixed margin, the board sits in its own row next to the draw pile and
+// is separately capped with max-width). Rather than relying on the pixel
+// math of one CSS rule happening to match the other, measure the board's
+// actual rendered box and pin the tableaus to it directly.
+function alignTableausToBoard() {
+  const table = document.getElementById('table');
+  const boardWrap = document.querySelector('.board-wrap');
+  if (!table || !boardWrap) return;
+  const tableRect = table.getBoundingClientRect();
+  const boardRect = boardWrap.getBoundingClientRect();
+  const leftOffset = boardRect.left - tableRect.left;
+  document.querySelectorAll('.tableau').forEach((t) => {
+    t.style.marginLeft = leftOffset + 'px';
+    t.style.width = boardRect.width + 'px';
+  });
+}
+
 function layoutTableauColumns() {
+  alignTableausToBoard();
   document.querySelectorAll('.tableau .col').forEach((col) => {
     const cards = col.querySelectorAll('.card.tab');
     if (!cards.length) return;

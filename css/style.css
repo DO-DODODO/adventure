@@ -197,17 +197,6 @@ html, body {
   box-shadow: 2px 4px 8px var(--shadow);
 }
 
-/* brief pop on the exact pile a card is being drawn from, so the source
-   reads clearly even when the draw-pile and board sit close together */
-.source-flash {
-  animation: source-flash-pop 0.4s ease;
-}
-@keyframes source-flash-pop {
-  0% { box-shadow: 0 0 0 6px rgba(167, 105, 53, 0); transform: scale(1); }
-  35% { box-shadow: 0 0 0 4px rgba(167, 105, 53, 0.7); transform: scale(1.12); }
-  100% { box-shadow: 0 0 0 0 rgba(167, 105, 53, 0); transform: scale(1); }
-}
-
 /* highlight glow for valid drop/draw targets */
 .hl {
   outline: 3px solid var(--highlight-target);

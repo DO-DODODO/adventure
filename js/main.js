@@ -142,12 +142,6 @@ async function drawCard(who, source, color) {
   const toRect = destEl.getBoundingClientRect();
   destEl.style.visibility = 'hidden';
 
-  // flash the pile the card is coming from so the source reads clearly
-  // even though the draw-pile and board sit close together
-  const sourcePileEl = source === 'deck' ? document.getElementById('draw-pile') : document.querySelector(`.discard-slot[data-color="${color}"]`);
-  sourcePileEl.classList.add('source-flash');
-  setTimeout(() => sourcePileEl.classList.remove('source-flash'), 400);
-
   // face logic: a card already visible on the discard pile stays visible
   // in flight; a deck card is unknown/hidden the whole way for the
   // opponent but gets revealed mid-flight for the player drawing it.
