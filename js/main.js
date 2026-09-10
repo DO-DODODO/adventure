@@ -150,6 +150,9 @@ async function drawCard(who, source, color) {
 
 async function finishTurn() {
   if (isDeckEmpty()) {
+    // let the last card's landed state be visible for a beat instead of
+    // cutting straight to the score screen the instant it arrives
+    await wait(800);
     endRound();
     return;
   }
