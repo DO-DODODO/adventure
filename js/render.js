@@ -122,6 +122,22 @@ function renderGame() {
   clearHighlights();
 }
 
+// Targeted re-renders for a single place/draw action, so an action by one
+// side doesn't rebuild (and visually flicker) DOM the other side owns.
+function renderPlaceResult(who, action) {
+  if (who === 'me') renderMyHand(); else renderOppHand();
+  if (action === 'discard') renderBoard();
+  else renderTableau(who === 'me' ? 'my-tableau' : 'opp-tableau', who === 'me' ? state.myTableau : state.oppTableau, who === 'me' ? 'true' : 'false');
+  layoutTableauColumns();
+  clearHighlights();
+}
+
+function renderDrawResult(who) {
+  if (who === 'me') renderMyHand(); else renderOppHand();
+  renderBoard();
+  clearHighlights();
+}
+
 function clearHighlights() {
   document.querySelectorAll('.hl').forEach((el) => el.classList.remove('hl'));
 }

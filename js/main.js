@@ -80,7 +80,7 @@ async function placeCard(who, card, handIndex, action, color) {
 
   state.selectedIndex = null;
   state.phase = 'placed';
-  renderGame();
+  renderPlaceResult(who, action);
 
   const destSelector = action === 'discard'
     ? `.discard-slot[data-color="${color}"] .card`
@@ -114,7 +114,7 @@ async function drawCard(who, source, color) {
   hand.push(card);
   sortHand(hand);
   state.phase = 'idle';
-  renderGame();
+  renderDrawResult(who);
 
   const destSelector = who === 'me'
     ? `#my-hand-lane .card.held[data-color="${card.color}"][data-label="${card.label}"]`
@@ -159,12 +159,12 @@ async function afterTurnChange() {
 
 // ---------------- AI turn ----------------
 async function runAiTurn() {
-  await wait(700); // "thinking" pause so the turn-highlight is visible first
+  await wait(900); // "thinking" pause so the turn-highlight is visible first
 
   const play = aiChoosePlay(state);
   const handIndex = state.oppHand.indexOf(play.card);
   await placeCard('opp', play.card, handIndex, play.action, play.card.color);
-  await wait(500); // beat to register what was played before drawing
+  await wait(650); // beat to register what was played before drawing
 
   const draw = aiChooseDraw(state);
   if (draw.source === 'deck') await drawCard('opp', 'deck');

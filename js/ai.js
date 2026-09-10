@@ -2,7 +2,10 @@
 // state, return a decision object. The caller (main.js) is responsible for
 // actually mutating state and animating it.
 
-function isCommitted(hand, color) {
+function isCommitted(hand, color, tableauLen) {
+  // already played a card of this color: the expedition is locked in
+  // regardless of what's left in hand, there's no backing out.
+  if (tableauLen > 0) return true;
   const cardsOfColor = hand.filter((c) => c.color === color);
   const sum = cardsOfColor
     .filter((c) => c.label !== 'X')
@@ -16,7 +19,7 @@ function aiChoosePlay(state) {
   const hand = state.oppHand;
 
   for (const color of COLORS) {
-    if (!isCommitted(hand, color)) continue;
+    if (!isCommitted(hand, color, state.oppTableau[color].length)) continue;
     const candidates = hand.filter((c) => c.color === color);
     const playable = candidates.filter((c) =>
       canPlaceOnTableau(state.oppTableau[color], c.label)
@@ -54,7 +57,7 @@ function aiChooseDraw(state) {
   for (const color of COLORS) {
     const pile = state.discards[color];
     if (pile.length === 0) continue;
-    if (isCommitted(state.oppHand, color)) {
+    if (isCommitted(state.oppHand, color, state.oppTableau[color].length)) {
       return { source: 'discard', color };
     }
   }
