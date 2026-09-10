@@ -60,14 +60,16 @@
   </div>
 
   <div id="screen-score" class="screen">
-    <div class="score-card">
-      <h2>결과</h2>
-      <div class="subtitle" id="score-subtitle"></div>
-      <div id="score-rows"></div>
-      <div class="score-total"><span>총점</span><span id="score-total-val"></span></div>
-      <div class="score-buttons">
-        <button id="btn-again" class="btn-again">한 판 더!</button>
-        <button id="btn-quit" class="btn-quit">게임종료</button>
+    <div class="board">
+      <div class="screw tl"></div><div class="screw tr"></div>
+      <div class="screw bl"></div><div class="screw br"></div>
+      <div class="plate">
+        <div class="plate-title">탐험 결과</div>
+        <div id="score-plate-body"></div>
+        <div class="score-buttons">
+          <button id="btn-again" class="btn-again">한 판 더!</button>
+          <button id="btn-quit" class="btn-quit">게임종료</button>
+        </div>
       </div>
     </div>
   </div>

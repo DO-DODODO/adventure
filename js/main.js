@@ -202,7 +202,7 @@ function endRound() {
     : (mine.total > opp.total ? 'me' : 'opp');
   state.firstPlayer = state.lastWinner;
 
-  renderScore({ byColor: mine.byColor, total: mine.total, oppTotal: opp.total });
+  renderScore({ myByColor: mine.byColor, myTotal: mine.total, oppByColor: opp.byColor, oppTotal: opp.total });
   showScreen('score');
 }
 

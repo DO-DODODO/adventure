@@ -252,17 +252,30 @@ function flyCard({ fromRect, toRect, frontUrl, backUrl, startFace, endFace, dura
   });
 }
 
+function scoreCellClass(v) {
+  return v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
+}
+
+function scoreRow(label, byColor, total, isWin) {
+  const cells = COLORS.map((c) => `<div class="cell ${scoreCellClass(byColor[c])}">${byColor[c]}</div>`).join('');
+  return `<div class="score-grow score-prow ${isWin ? 'win' : ''}">
+    <div class="lbl">${label}</div>
+    ${cells}
+    <div class="tot" style="color:${isWin ? '#2f6b3a' : '#a3402f'}">${total}</div>
+  </div>`;
+}
+
 function renderScore(result) {
-  const rows = COLORS.map((color) => {
-    return `<div class="score-row">
-      <span class="dot" style="background:${COLOR_HEX[color]}"></span>
-      <span class="label">${COLOR_LABEL_KO[color]}</span>
-      <span class="val">${result.byColor[color]}</span>
-    </div>`;
-  }).join('');
-  document.getElementById('score-rows').innerHTML = rows;
-  document.getElementById('score-total-val').textContent = result.total;
-  const oppLabel = result.oppTotal !== undefined ? result.oppTotal : '-';
-  document.getElementById('score-subtitle').textContent =
-    `상대 총점 ${oppLabel} | ${result.total > result.oppTotal ? '승리!' : result.total < result.oppTotal ? '패배' : '무승부'}`;
+  const win = result.myTotal > result.oppTotal;
+  const resultText = result.myTotal === result.oppTotal ? '무승부' : (win ? '승리!' : '패배...');
+  document.getElementById('score-plate-body').innerHTML = `
+    <div class="score-grow score-head">
+      <div></div>
+      ${COLORS.map((c) => `<img src="img/score-badge-${c}.png">`).join('')}
+      <div class="totlbl">총점</div>
+    </div>
+    ${scoreRow('나', result.myByColor, result.myTotal, win)}
+    ${scoreRow('상대', result.oppByColor, result.oppTotal, !win)}
+    <div class="score-result ${win ? 'win' : 'lose'}">${resultText}</div>
+  `;
 }
