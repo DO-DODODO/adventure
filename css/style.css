@@ -11,6 +11,7 @@
   --card-back-line: #8a6a4e;
   --shadow: rgba(59, 34, 15, 0.28);
   --highlight: #ffd54a;
+  --highlight-target: #a76935;
 }
 
 * { box-sizing: border-box; }
@@ -198,15 +199,15 @@ html, body {
 
 /* highlight glow for valid drop/draw targets */
 .hl {
-  outline: 3px solid var(--highlight);
+  outline: 3px solid var(--highlight-target);
   outline-offset: 2px;
-  box-shadow: 0 0 10px 3px rgba(255, 213, 74, 0.85);
+  box-shadow: 0 0 10px 3px rgba(167, 105, 53, 0.75);
   animation: hl-pulse 1s ease-in-out infinite;
   cursor: pointer;
 }
 @keyframes hl-pulse {
-  0%, 100% { outline-color: var(--highlight); }
-  50% { outline-color: #fff2b0; }
+  0%, 100% { outline-color: var(--highlight-target); }
+  50% { outline-color: #d0925c; }
 }
 .discard-slot.hl { border-radius: 6px; }
 
@@ -218,10 +219,10 @@ html, body {
   position: absolute; bottom: -8px; right: -10px; background: var(--accent); color: var(--accent-ink);
   font-size: 10px; font-weight: 800; border-radius: 999px; padding: 2px 6px; border: 2px solid var(--panel);
 }
-.board-wrap { position: relative; flex: 1; }
+.board-wrap { position: relative; flex: 1; max-width: 90%; margin: 0 auto; }
 .board-wrap img { display: block; width: 100%; filter: drop-shadow(0 4px 10px var(--shadow)); }
 .discard-slot {
-  position: absolute; top: 50%; width: 15%; aspect-ratio: 624 / 1000;
+  position: absolute; top: 50%; width: 16.5%; aspect-ratio: 624 / 1000;
   transform: translate(-50%, -50%);
   border-radius: 3px;
 }
