@@ -1,6 +1,6 @@
 // DOM rendering: turns `state` into HTML. No game-logic decisions here.
 
-const SLOT_LEFT = [13.4, 31.5, 49.7, 67.8, 86.0]; // must match board.png's 5 slot centers
+const SLOT_LEFT = [13.0, 31.3, 49.8, 68.3, 86.8]; // must match board.png's 5 slot centers
 const COLOR_HEX = {
   sun: '#c9852f', water: '#3f7fb0', fire: '#c1462f', leaf: '#4f7a4a', moon: '#7d5fa3',
 };

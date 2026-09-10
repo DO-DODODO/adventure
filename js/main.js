@@ -27,7 +27,13 @@ async function startSingleModeFromMenu() {
 }
 
 // ---------------- my turn: card select / place / draw ----------------
+// guards against a fast double-tap firing a second place/draw before the
+// first one's flight animation finishes (was leaving a card's element
+// stuck at visibility:hidden from an interrupted/overlapping animation)
+let uiBusy = false;
+
 document.getElementById('my-hand-lane').addEventListener('click', (e) => {
+  if (uiBusy) return;
   const cardEl = e.target.closest('.card.held');
   if (!cardEl) return;
   if (state.turn !== 'me' || state.phase !== 'idle') return;
@@ -44,25 +50,37 @@ document.getElementById('my-hand-lane').addEventListener('click', (e) => {
 });
 
 document.getElementById('table').addEventListener('click', async (e) => {
+  if (uiBusy) return;
   if (state.turn !== 'me') return;
 
   if (state.phase === 'idle' && state.selectedIndex !== null) {
     const target = e.target.closest('.hl');
     if (!target) return;
     const card = state.myHand[state.selectedIndex];
-    if (target.classList.contains('discard-slot')) {
-      await placeCard('me', card, state.selectedIndex, 'discard', target.dataset.color);
-    } else if (target.classList.contains('col')) {
-      await placeCard('me', card, state.selectedIndex, 'tableau', target.dataset.color);
+    uiBusy = true;
+    try {
+      if (target.classList.contains('discard-slot')) {
+        await placeCard('me', card, state.selectedIndex, 'discard', target.dataset.color);
+      } else if (target.classList.contains('col')) {
+        await placeCard('me', card, state.selectedIndex, 'tableau', target.dataset.color);
+      }
+    } finally {
+      uiBusy = false;
     }
     return;
   }
 
   if (state.phase === 'placed') {
     const drawPile = e.target.closest('.draw-pile.hl');
-    if (drawPile) { await drawCard('me', 'deck'); return; }
     const slot = e.target.closest('.discard-slot.hl');
-    if (slot) { await drawCard('me', 'discard', slot.dataset.color); return; }
+    if (!drawPile && !slot) return;
+    uiBusy = true;
+    try {
+      if (drawPile) await drawCard('me', 'deck');
+      else await drawCard('me', 'discard', slot.dataset.color);
+    } finally {
+      uiBusy = false;
+    }
   }
 });
 

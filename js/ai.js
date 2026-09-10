@@ -58,6 +58,8 @@ function aiChooseDraw(state) {
     if (color === state.justDiscardedColor) continue; // can't take back what it just discarded this turn
     const pile = state.discards[color];
     if (pile.length === 0) continue;
+    const topCard = pile[pile.length - 1];
+    if (!canPlaceOnTableau(state.oppTableau[color], topCard.label)) continue; // dead card, can never be played
     if (isCommitted(state.oppHand, color, state.oppTableau[color].length)) {
       return { source: 'discard', color };
     }
