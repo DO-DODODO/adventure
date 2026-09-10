@@ -25,3 +25,12 @@ function shuffle(array) {
   }
   return a;
 }
+
+// sorts a hand in place: color order (sun/water/fire/leaf/moon), then X..10
+function sortHand(hand) {
+  hand.sort((a, b) => {
+    const colorDiff = COLORS.indexOf(a.color) - COLORS.indexOf(b.color);
+    if (colorDiff !== 0) return colorDiff;
+    return cardValue(a) - cardValue(b);
+  });
+}

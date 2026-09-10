@@ -37,6 +37,8 @@ function startNewRound() {
   state.oppTableau = emptyTableau();
   state.myHand = state.deck.splice(0, 8);
   state.oppHand = state.deck.splice(0, 8);
+  sortHand(state.myHand);
+  sortHand(state.oppHand);
   state.selectedIndex = null;
   state.phase = 'idle';
   state.pendingCard = null;

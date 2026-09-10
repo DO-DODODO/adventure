@@ -88,6 +88,7 @@ function drawCard(who, source, color) {
   if (source === 'deck') card = state.deck.pop();
   else card = state.discards[color].pop();
   hand.push(card);
+  sortHand(hand);
   state.phase = 'idle';
   renderGame();
   finishTurn();
