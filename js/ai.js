@@ -55,6 +55,7 @@ function aiChoosePlay(state) {
 // Returns { source: 'deck' } or { source: 'discard', color }
 function aiChooseDraw(state) {
   for (const color of COLORS) {
+    if (color === state.justDiscardedColor) continue; // can't take back what it just discarded this turn
     const pile = state.discards[color];
     if (pile.length === 0) continue;
     if (isCommitted(state.oppHand, color, state.oppTableau[color].length)) {

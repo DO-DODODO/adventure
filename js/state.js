@@ -25,6 +25,7 @@ const state = {
   selectedIndex: null, // index into myHand of the currently-lifted card
   phase: 'idle', // idle | placed (waiting on draw)
   pendingCard: null, // the card just played, waiting to be replaced by a draw
+  justDiscardedColor: null, // color discarded this turn -- can't be drawn back until next turn
   myCharacterIndex: 0,
   oppCharacterIndex: null, // fixed once per session (assigned at first game start)
   lastScore: null,
@@ -42,6 +43,7 @@ function startNewRound() {
   state.selectedIndex = null;
   state.phase = 'idle';
   state.pendingCard = null;
+  state.justDiscardedColor = null;
 
   if (state.firstPlayer === null) {
     state.firstPlayer = Math.random() < 0.5 ? 'me' : 'opp';

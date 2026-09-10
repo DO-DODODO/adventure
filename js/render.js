@@ -63,6 +63,18 @@ function renderBoard() {
 
 function renderMyHand() {
   const lane = document.getElementById('my-hand-lane');
+  const existing = [...lane.querySelectorAll('.card.held')];
+  const sameSet = existing.length === state.myHand.length &&
+    existing.every((el, i) => el.dataset.color === state.myHand[i].color && el.dataset.label === state.myHand[i].label);
+
+  if (sameSet) {
+    // hand contents/order unchanged (e.g. just a select/deselect click) --
+    // toggle classes in place instead of tearing down and rebuilding every
+    // card, which was causing the whole hand to visibly flash each time.
+    existing.forEach((el, i) => el.classList.toggle('selected', i === state.selectedIndex));
+    return;
+  }
+
   lane.innerHTML = state.myHand
     .map((c, i) => {
       const selected = i === state.selectedIndex ? 'selected' : '';
@@ -158,6 +170,7 @@ function highlightDrawTargets() {
     document.getElementById('draw-pile').classList.add('hl');
   }
   for (const color of COLORS) {
+    if (color === state.justDiscardedColor) continue; // can't take back what I just discarded this turn
     if (state.discards[color].length > 0) {
       const slot = document.querySelector(`.discard-slot[data-color="${color}"]`);
       if (slot) slot.classList.add('hl');

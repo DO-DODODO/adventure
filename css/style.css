@@ -197,6 +197,17 @@ html, body {
   box-shadow: 2px 4px 8px var(--shadow);
 }
 
+/* brief pop on the exact pile a card is being drawn from, so the source
+   reads clearly even when the draw-pile and board sit close together */
+.source-flash {
+  animation: source-flash-pop 0.4s ease;
+}
+@keyframes source-flash-pop {
+  0% { box-shadow: 0 0 0 6px rgba(167, 105, 53, 0); transform: scale(1); }
+  35% { box-shadow: 0 0 0 4px rgba(167, 105, 53, 0.7); transform: scale(1.12); }
+  100% { box-shadow: 0 0 0 0 rgba(167, 105, 53, 0); transform: scale(1); }
+}
+
 /* highlight glow for valid drop/draw targets */
 .hl {
   outline: 3px solid var(--highlight-target);
@@ -211,15 +222,16 @@ html, body {
 }
 .discard-slot.hl { border-radius: 6px; }
 
-.board-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+.board-row { display: flex; align-items: center; gap: 20px; padding: 6px 0; }
 .draw-pile { position: relative; width: 46px; height: 62px; flex-shrink: 0; cursor: default; }
 .draw-pile.hl { cursor: pointer; }
 .draw-pile .card.back { position: absolute; width: 42px; height: 56px; border: 1px solid var(--card-back-line); }
 .draw-pile .count {
   position: absolute; bottom: -8px; right: -10px; background: var(--accent); color: var(--accent-ink);
   font-size: 10px; font-weight: 800; border-radius: 999px; padding: 2px 6px; border: 2px solid var(--panel);
+  transform: scale(0.9); transform-origin: bottom right;
 }
-.board-wrap { position: relative; flex: 1; max-width: 90%; margin: 0 auto; }
+.board-wrap { position: relative; flex: 1; max-width: 81%; margin: 0 auto; }
 .board-wrap img { display: block; width: 100%; filter: drop-shadow(0 4px 10px var(--shadow)); }
 .discard-slot {
   position: absolute; top: 50%; width: 16.5%; aspect-ratio: 624 / 1000;

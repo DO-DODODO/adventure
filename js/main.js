@@ -78,6 +78,7 @@ async function placeCard(who, card, handIndex, action, color) {
   if (action === 'discard') state.discards[color].push(card);
   else (who === 'me' ? state.myTableau : state.oppTableau)[color].push(card);
 
+  state.justDiscardedColor = action === 'discard' ? color : null;
   state.selectedIndex = null;
   state.phase = 'placed';
   renderPlaceResult(who, action);
@@ -122,6 +123,12 @@ async function drawCard(who, source, color) {
   const destEl = document.querySelector(destSelector);
   const toRect = destEl.getBoundingClientRect();
   destEl.style.visibility = 'hidden';
+
+  // flash the pile the card is coming from so the source reads clearly
+  // even though the draw-pile and board sit close together
+  const sourcePileEl = source === 'deck' ? document.getElementById('draw-pile') : document.querySelector(`.discard-slot[data-color="${color}"]`);
+  sourcePileEl.classList.add('source-flash');
+  setTimeout(() => sourcePileEl.classList.remove('source-flash'), 400);
 
   // face logic: a card already visible on the discard pile stays visible
   // in flight; a deck card is unknown/hidden the whole way for the
