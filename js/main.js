@@ -23,7 +23,7 @@ async function startSingleModeFromMenu() {
   document.getElementById('screen-loading').classList.add('active');
   await wait(1100); // lets the hourglass animation play once
   document.getElementById('screen-loading').classList.remove('active');
-  afterTurnChange();
+  await afterTurnChange();
 }
 
 // ---------------- my turn: card select / place / draw ----------------
@@ -43,7 +43,7 @@ document.getElementById('my-hand-lane').addEventListener('click', (e) => {
   }
 });
 
-document.getElementById('table').addEventListener('click', (e) => {
+document.getElementById('table').addEventListener('click', async (e) => {
   if (state.turn !== 'me') return;
 
   if (state.phase === 'idle' && state.selectedIndex !== null) {
@@ -51,77 +51,124 @@ document.getElementById('table').addEventListener('click', (e) => {
     if (!target) return;
     const card = state.myHand[state.selectedIndex];
     if (target.classList.contains('discard-slot')) {
-      placeCard('me', card, state.selectedIndex, 'discard', target.dataset.color);
+      await placeCard('me', card, state.selectedIndex, 'discard', target.dataset.color);
     } else if (target.classList.contains('col')) {
-      placeCard('me', card, state.selectedIndex, 'tableau', target.dataset.color);
+      await placeCard('me', card, state.selectedIndex, 'tableau', target.dataset.color);
     }
     return;
   }
 
   if (state.phase === 'placed') {
     const drawPile = e.target.closest('.draw-pile.hl');
-    if (drawPile) { drawCard('me', 'deck'); return; }
+    if (drawPile) { await drawCard('me', 'deck'); return; }
     const slot = e.target.closest('.discard-slot.hl');
-    if (slot) { drawCard('me', 'discard', slot.dataset.color); return; }
+    if (slot) { await drawCard('me', 'discard', slot.dataset.color); return; }
   }
 });
 
-function placeCard(who, card, handIndex, action, color) {
+async function placeCard(who, card, handIndex, action, color) {
   const hand = who === 'me' ? state.myHand : state.oppHand;
+
+  const sourceSelector = who === 'me'
+    ? `#my-hand-lane .card.held:nth-child(${handIndex + 1})`
+    : `#opp-hand-lane .card.back:nth-child(${handIndex + 1})`;
+  const fromRect = document.querySelector(sourceSelector).getBoundingClientRect();
+
   hand.splice(handIndex, 1);
   if (action === 'discard') state.discards[color].push(card);
   else (who === 'me' ? state.myTableau : state.oppTableau)[color].push(card);
 
   state.selectedIndex = null;
   state.phase = 'placed';
-  if (who === 'me') {
-    renderGame();
-    highlightDrawTargets();
-  } else {
-    renderGame();
-  }
+  renderGame();
+
+  const destSelector = action === 'discard'
+    ? `.discard-slot[data-color="${color}"] .card`
+    : `.col[data-color="${color}"][data-mine="${who === 'me'}"] .card.tab:last-child`;
+  const destEl = document.querySelector(destSelector);
+  const toRect = destEl.getBoundingClientRect();
+  destEl.style.visibility = 'hidden';
+
+  const startFace = who === 'me' ? 'front' : 'back';
+  await flyCard({
+    fromRect, toRect,
+    frontUrl: cardUrl(card), backUrl: CARD_BACK_URL,
+    startFace, endFace: 'front',
+  });
+  destEl.style.visibility = '';
+
+  if (who === 'me') highlightDrawTargets();
 }
 
-function drawCard(who, source, color) {
+async function drawCard(who, source, color) {
   const hand = who === 'me' ? state.myHand : state.oppHand;
-  let card;
-  if (source === 'deck') card = state.deck.pop();
-  else card = state.discards[color].pop();
+  const card = source === 'deck'
+    ? state.deck[state.deck.length - 1]
+    : state.discards[color][state.discards[color].length - 1];
+
+  const sourceSelector = source === 'deck' ? '#draw-pile .card.back' : `.discard-slot[data-color="${color}"] .card`;
+  const fromRect = document.querySelector(sourceSelector).getBoundingClientRect();
+
+  if (source === 'deck') state.deck.pop();
+  else state.discards[color].pop();
   hand.push(card);
   sortHand(hand);
   state.phase = 'idle';
   renderGame();
-  finishTurn();
+
+  const destSelector = who === 'me'
+    ? `#my-hand-lane .card.held[data-color="${card.color}"][data-label="${card.label}"]`
+    : '#opp-hand-lane .card.back:last-child';
+  const destEl = document.querySelector(destSelector);
+  const toRect = destEl.getBoundingClientRect();
+  destEl.style.visibility = 'hidden';
+
+  // face logic: a card already visible on the discard pile stays visible
+  // in flight; a deck card is unknown/hidden the whole way for the
+  // opponent but gets revealed mid-flight for the player drawing it.
+  const wasVisible = source === 'discard';
+  const willBeVisible = who === 'me';
+  const startFace = wasVisible ? 'front' : 'back';
+  const endFace = willBeVisible ? 'front' : 'back';
+
+  await flyCard({
+    fromRect, toRect,
+    frontUrl: cardUrl(card), backUrl: CARD_BACK_URL,
+    startFace, endFace,
+  });
+  destEl.style.visibility = '';
+
+  await finishTurn();
 }
 
-function finishTurn() {
+async function finishTurn() {
   if (isDeckEmpty()) {
     endRound();
     return;
   }
   state.turn = state.turn === 'me' ? 'opp' : 'me';
-  afterTurnChange();
+  await afterTurnChange();
 }
 
-function afterTurnChange() {
+async function afterTurnChange() {
   renderAvatars();
   if (state.turn === 'opp') {
-    runAiTurn();
+    await runAiTurn();
   }
 }
 
 // ---------------- AI turn ----------------
 async function runAiTurn() {
-  await wait(650); // "thinking" pause so the turn-highlight is visible first
+  await wait(700); // "thinking" pause so the turn-highlight is visible first
 
   const play = aiChoosePlay(state);
   const handIndex = state.oppHand.indexOf(play.card);
-  placeCard('opp', play.card, handIndex, play.action, play.card.color);
-  await wait(700);
+  await placeCard('opp', play.card, handIndex, play.action, play.card.color);
+  await wait(500); // beat to register what was played before drawing
 
   const draw = aiChooseDraw(state);
-  if (draw.source === 'deck') drawCard('opp', 'deck');
-  else drawCard('opp', 'discard', draw.color);
+  if (draw.source === 'deck') await drawCard('opp', 'deck');
+  else await drawCard('opp', 'discard', draw.color);
 }
 
 // ---------------- round end / score ----------------
@@ -146,7 +193,7 @@ document.getElementById('btn-again').addEventListener('click', async () => {
   document.getElementById('screen-loading').classList.add('active');
   await wait(900);
   document.getElementById('screen-loading').classList.remove('active');
-  afterTurnChange();
+  await afterTurnChange();
 });
 
 document.getElementById('btn-quit').addEventListener('click', () => {

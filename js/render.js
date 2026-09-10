@@ -21,12 +21,14 @@ function charStyle(idx) {
   return `background-size:${sizeX.toFixed(3)}% ${sizeY.toFixed(3)}%;background-position:${posX.toFixed(3)}% ${posY.toFixed(3)}%;`;
 }
 
+const CARD_BACK_URL = 'img/card-back.png';
+
 function cardUrl(card) {
   return `img/cards/${card.color}-${card.label}.png`;
 }
 
 function cardEl(card, sizeClass, extraAttrs) {
-  return `<div class="card ${sizeClass}" style="background-image:url('${cardUrl(card)}')" ${extraAttrs || ''}></div>`;
+  return `<div class="card ${sizeClass}" data-color="${card.color}" data-label="${card.label}" style="background-image:url('${cardUrl(card)}')" ${extraAttrs || ''}></div>`;
 }
 
 function backEl(sizeClass) {
@@ -145,6 +147,57 @@ function highlightDrawTargets() {
       if (slot) slot.classList.add('hl');
     }
   }
+}
+
+// Animates a flying clone card from fromRect to toRect. If startFace !==
+// endFace, plays a pseudo-3D flip (scaleX pinch + image swap) at the
+// midpoint. Resolves once the clone has been removed.
+function flyCard({ fromRect, toRect, frontUrl, backUrl, startFace, endFace, duration }) {
+  const dur = duration || 380;
+  const dx = toRect.left - fromRect.left;
+  const dy = toRect.top - fromRect.top;
+  const sx = toRect.width / fromRect.width;
+  const sy = toRect.height / fromRect.height;
+  const flips = startFace !== endFace;
+
+  const clone = document.createElement('div');
+  clone.className = 'card flying';
+  clone.style.backgroundImage = `url('${startFace === 'front' ? frontUrl : backUrl}')`;
+  clone.style.left = fromRect.left + 'px';
+  clone.style.top = fromRect.top + 'px';
+  clone.style.width = fromRect.width + 'px';
+  clone.style.height = fromRect.height + 'px';
+  document.body.appendChild(clone);
+
+  return new Promise((resolve) => {
+    if (!flips) {
+      const anim = clone.animate(
+        [{ transform: 'translate(0,0) scale(1,1)' }, { transform: `translate(${dx}px,${dy}px) scale(${sx},${sy})` }],
+        { duration: dur, easing: 'ease' }
+      );
+      anim.onfinish = () => { clone.remove(); resolve(); };
+    } else {
+      const midX = dx / 2, midY = dy / 2, midSx = sx / 2 + 0.5, midSy = sy / 2 + 0.5;
+      const anim1 = clone.animate(
+        [
+          { transform: 'translate(0,0) scale(1,1)' },
+          { transform: `translate(${midX}px,${midY}px) scale(0.02,${midSy})` },
+        ],
+        { duration: dur / 2, easing: 'ease-in' }
+      );
+      anim1.onfinish = () => {
+        clone.style.backgroundImage = `url('${endFace === 'front' ? frontUrl : backUrl}')`;
+        const anim2 = clone.animate(
+          [
+            { transform: `translate(${midX}px,${midY}px) scale(0.02,${midSy})` },
+            { transform: `translate(${dx}px,${dy}px) scale(${sx},${sy})` },
+          ],
+          { duration: dur / 2, easing: 'ease-out' }
+        );
+        anim2.onfinish = () => { clone.remove(); resolve(); };
+      };
+    }
+  });
 }
 
 function renderScore(result) {
