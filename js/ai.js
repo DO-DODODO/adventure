@@ -37,30 +37,32 @@ function aiChoosePlay(state) {
     // play into whichever committed expedition is furthest along -- the
     // most advantageous move, not just whichever color comes first.
     candidates.sort((a, b) => b.highest - a.highest);
-    const { color, ofColor, playable } = candidates[0];
+    for (const { color, ofColor, playable } of candidates) {
+      // X can only ever be played before any number in that color -- once a
+      // number goes down, X is locked out there for the rest of the round.
+      // So "confident" (tableau sum so far + same-color numbers still in
+      // hand already reaches 20) plays X now to build the multiplier while
+      // it's still available; otherwise it's safer to bank a number and
+      // not risk amplifying a loss with a multiplier that might not pay off.
+      const tableauSum = state.oppTableau[color]
+        .filter((c) => c.label !== 'X')
+        .reduce((s, c) => s + parseInt(c.label, 10), 0);
+      const handSum = ofColor
+        .filter((c) => c.label !== 'X')
+        .reduce((s, c) => s + parseInt(c.label, 10), 0);
+      const confident = tableauSum + handSum >= 20;
 
-    // X can only ever be played before any number in that color -- once a
-    // number goes down, X is locked out there for the rest of the round.
-    // So "confident" (tableau sum so far + same-color numbers still in
-    // hand already reaches 20) plays X now to build the multiplier while
-    // it's still available; otherwise it's safer to bank a number and
-    // not risk amplifying a loss with a multiplier that might not pay off.
-    const tableauSum = state.oppTableau[color]
-      .filter((c) => c.label !== 'X')
-      .reduce((s, c) => s + parseInt(c.label, 10), 0);
-    const handSum = ofColor
-      .filter((c) => c.label !== 'X')
-      .reduce((s, c) => s + parseInt(c.label, 10), 0);
-    const confident = tableauSum + handSum >= 20;
+      const numbers = playable
+        .filter((c) => c.label !== 'X')
+        .sort((a, b) => parseInt(a.label, 10) - parseInt(b.label, 10));
+      const xCard = playable.find((c) => c.label === 'X');
 
-    const numbers = playable
-      .filter((c) => c.label !== 'X')
-      .sort((a, b) => parseInt(a.label, 10) - parseInt(b.label, 10));
-    const xCard = playable.find((c) => c.label === 'X');
-
-    if (confident && xCard) return { card: xCard, action: 'tableau' };
-    if (numbers.length > 0) return { card: numbers[0], action: 'tableau' };
-    return { card: xCard, action: 'tableau' }; // only X is playable here
+      if (confident && xCard) return { card: xCard, action: 'tableau' };
+      if (numbers.length > 0) return { card: numbers[0], action: 'tableau' };
+      // only X is playable here and there's no confidence yet -- don't
+      // amplify a possible loss. Skip this color and try the next
+      // candidate, or fall through to discard if none are left.
+    }
   }
 
   // Nothing committed is playable -- discard. Priority: a card the human
